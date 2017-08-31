@@ -54,7 +54,7 @@ object Main {
 //    val kafka = KafkaConnection(kafkaCon)
 
     logger.info("Loading class " + processClass)
-    launchStep(Class.forName(s"cognosphere.steps.$processClass")) (loadedConfig, spark, timeWindow)
+    launchStep(Class.forName(s"org.uclm.alarcos.rrc.steps.$processClass")) (loadedConfig, spark, timeWindow)
 
   }
 

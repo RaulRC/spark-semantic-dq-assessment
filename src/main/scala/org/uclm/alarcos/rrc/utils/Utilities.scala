@@ -1,7 +1,10 @@
 package org.uclm.alarcos.rrc.utils
 
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+
 /**
-  * Created by marcosvecino on 12/06/17.
+  * Created by Raul Reguillo on 12/06/17.
   */
 object Utilities {
 
