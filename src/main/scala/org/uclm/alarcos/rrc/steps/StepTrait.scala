@@ -5,7 +5,7 @@ import org.apache.spark.sql._
 
 
 /**
-  * Created by marcosvecino on 30/05/17.
+  * Created by Raul Reguillo on 31/08/17.
   */
 trait StepTrait extends Serializable{
 

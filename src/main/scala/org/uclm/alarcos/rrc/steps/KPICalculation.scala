@@ -1,5 +1,11 @@
 package org.uclm.alarcos.rrc.steps
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.LongWritable
+import org.apache.jena.hadoop.rdf.io.input.rdfxml.RdfXmlInputFormat
+import org.apache.jena.hadoop.rdf.io.registry.HadoopRdfIORegistry
+import org.apache.jena.hadoop.rdf.io.registry.readers.RdfXmlReaderFactory
+import org.apache.jena.hadoop.rdf.types.TripleWritable
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.uclm.alarcos.rrc.config.DQAssessmentConfiguration
 import org.uclm.alarcos.rrc.utils.Utilities
@@ -33,21 +39,31 @@ class KPICalculation(config: DQAssessmentConfiguration,
       //Load and custom synthetic dataset
 
       //INPUT
-
-      //val df = getDataframeFromJSON(config.hdfsInputPath + "*")
       val df = sparkSession.read.textFile(config.hdfsInputPath + "*")
+      val df2 = sparkSession.read.format("com.databricks.spark.xml")
+        .option("rowTag", "book")
+        .load(config.hdfsInputPath + "sample_output.xml")
+
       //PROCESS
       df.show(10)
+      df2.show(10, truncate=false)
       val ordered = df.map(line  => line.replace("{", "").replace("}", "").split(",").sortWith(_ > _))
-
       val lines = df.count()
       val words = df.flatMap(line => line.split(" "))
         .map(word => (word, 1))
-
       words.show(10)
 
-        //.reduceByKey(_ + _)
+      val factory = new RdfXmlReaderFactory()
+      HadoopRdfIORegistry.addReaderFactory(factory)
+      val conf = new Configuration()
+      conf.set("rdf.io.input.ignore-bad-tuples", "false")
+      val data = sparkSession.sparkContext.newAPIHadoopFile(config.hdfsInputPath,
+        classOf[RdfXmlInputFormat],
+        classOf[LongWritable], //position
+        classOf[TripleWritable],   //value
+        conf)
 
+      data.take(10).foreach(println)
       //OUTPUT
       words.write.mode(SaveMode.Overwrite).save(config.hdfsOutputPath + "out")
 
