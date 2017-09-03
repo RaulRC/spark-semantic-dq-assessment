@@ -1,6 +1,7 @@
 .idea/*
 *.iml
 target/
+src/main/resources/outputs/
 logs/
 raml/api.html
 project/target/*

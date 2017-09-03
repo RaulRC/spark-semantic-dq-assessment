@@ -1,6 +1,9 @@
 package org.uclm.alarcos.rrc
 
+import java.net.URI
+
 import com.typesafe.config.{Config, ConfigFactory}
+import net.sansa_stack.rdf.spark.io.NTripleReader
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
@@ -50,10 +53,15 @@ object Main {
       .config(sparkConf)
       .getOrCreate()
 
-//    val kafkaCon = ArrowheadConfiguration.kafkaProperties(loadedConfig.kafkaBrokers, loadedConfig.kafkaCompression)
-//    val kafka = KafkaConnection(kafkaCon)
 
     logger.info("Loading class " + processClass)
+    val triplesRDD = NTripleReader.load(spark, URI.create("src/main/resources/inputs/sample.nt"))
+
+    val allTriples = triplesRDD.collect()
+    println(triplesRDD.count())
+    println(allTriples.toString())
+    //triplesRDD.take(55555).foreach(println(_))
+
     launchStep(Class.forName(s"org.uclm.alarcos.rrc.steps.$processClass")) (loadedConfig, spark, timeWindow)
 
   }

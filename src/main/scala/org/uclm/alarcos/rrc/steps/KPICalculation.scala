@@ -1,11 +1,6 @@
 package org.uclm.alarcos.rrc.steps
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.LongWritable
-import org.apache.jena.hadoop.rdf.io.input.rdfxml.RdfXmlInputFormat
-import org.apache.jena.hadoop.rdf.io.registry.HadoopRdfIORegistry
-import org.apache.jena.hadoop.rdf.io.registry.readers.RdfXmlReaderFactory
-import org.apache.jena.hadoop.rdf.types.TripleWritable
+
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.uclm.alarcos.rrc.config.DQAssessmentConfiguration
 import org.uclm.alarcos.rrc.utils.Utilities
@@ -13,7 +8,7 @@ import org.uclm.alarcos.rrc.utils.Utilities
 
 /**
   * Created by raul.reguillo on 31/08/17.
-  */
+  **/
 class KPICalculation(config: DQAssessmentConfiguration,
                      sparkSession: SparkSession,
                      period: String) extends StepTrait{
@@ -42,7 +37,7 @@ class KPICalculation(config: DQAssessmentConfiguration,
       val df = sparkSession.read.textFile(config.hdfsInputPath + "*")
       val df2 = sparkSession.read.format("com.databricks.spark.xml")
         .option("rowTag", "book")
-        .load(config.hdfsInputPath + "sample_output.xml")
+        .load(config.hdfsInputPath + "sample_output.rdf")
 
       //PROCESS
       df.show(10)
@@ -53,17 +48,6 @@ class KPICalculation(config: DQAssessmentConfiguration,
         .map(word => (word, 1))
       words.show(10)
 
-      val factory = new RdfXmlReaderFactory()
-      HadoopRdfIORegistry.addReaderFactory(factory)
-      val conf = new Configuration()
-      conf.set("rdf.io.input.ignore-bad-tuples", "false")
-      val data = sparkSession.sparkContext.newAPIHadoopFile(config.hdfsInputPath,
-        classOf[RdfXmlInputFormat],
-        classOf[LongWritable], //position
-        classOf[TripleWritable],   //value
-        conf)
-
-      data.take(10).foreach(println)
       //OUTPUT
       words.write.mode(SaveMode.Overwrite).save(config.hdfsOutputPath + "out")
 
@@ -76,4 +60,5 @@ class KPICalculation(config: DQAssessmentConfiguration,
     }
   }
 }
+
 
